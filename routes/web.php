@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::post('subirdeals', 'dealsController@subirdeals');
 Route::get('/', 'dealsController@views');
 
 Route::get('backend/deals', 'dealsController@backenddeals');
