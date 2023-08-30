@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::post('subirdeals', 'dealsController@subirdeals');
-Route::get('/deals', 'dealsController@views');
+Route::get('/', 'dealsController@views');
 
 Route::get('backend/deals', 'dealsController@backenddeals');
 Route::get('backend/dealsform', 'dealsController@backendcreate');
@@ -22,10 +22,6 @@ Route::get('backend/dealsform/{id}', 'dealsController@backendupdate');
 Route::post('deals', 'dealsController@post');
 Route::post('deals/{id}', 'dealsController@update');
 Route::get('delete/{id}', 'dealsController@delete_deals');
-
-Route::get('/', function () {
-    return view('welcome');
-});
 
 Auth::routes();
 

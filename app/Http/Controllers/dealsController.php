@@ -5,129 +5,57 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use App\Deals;
+use Illuminate\Support\Facades\Http;
 
 class dealsController extends Controller
 {
-    //
 
     function deals(){
-        $data = [
-            0 => [
-              "internalName"=> "COLLAPSE",
-              "title"=> "Collapse!",
-              "metacriticLink"=> "/game/pc/collapse",
-              "dealID"=> "9hzJBWH3Zmyu2lBmbUG%2FdIXFiafNs0s9G5Qa5ccRjV0%3D",
-              "storeID"=> "1",
-              "gameID"=> "106086",
-              "salePrice"=> "1.99",
-              "normalPrice"=> "19.99",
-              "isOnSale"=> "1",
-              "savings"=> "90.045023",
-              "metacriticScore"=> "0",
-              "steamRatingText"=> "Mostly Positive",
-              "steamRatingPercent"=> "71",
-              "steamRatingCount"=> "455",
-              "steamAppID"=> "289620",
-              "releaseDate"=> 1611532800,
-              "lastChange"=> 1625531581,
-              "dealRating"=> "9.4",
-              "thumb"=> "https://cdn.cloudflare.steamstatic.com/steam/apps/289620/capsule_sm_120.jpg?t=1618414871"
-            ],
 
-            1 => [
-                "internalName"=> "THEORANGEBOX",
-                "title"=> "The Orange Box",
-                "metacriticLink"=> "/game/pc/the-orange-box",
-                "dealID"=> "TZdIf%2BhNCxhdhp2S69CaIwYmzVwD2n3OR%2BiLDGnURRo%3D",
-                "storeID"=> "1",
-                "gameID"=> "94081",
-                "salePrice"=> "3.99",
-                "normalPrice"=> "60",
-                "isOnSale"=> "1",
-                "savings"=> "80.040020",
-                "metacriticScore"=> "96",
-                "steamRatingText"=> "Very Positive",
-                "steamRatingPercent"=> "94",
-                "steamRatingCount"=> "990909",
-                "steamAppID"=> "469",
-                "releaseDate"=> 1191974400,
-                "lastChange"=> 1625001348,
-                "dealRating"=> "9.3",
-                "thumb"=> "https://cdn.cloudflare.steamstatic.com/steam/subs/469/capsule_sm_120.jpg?t=1577609887"
-            ],
-
-            2 => [
-                "internalName"=> "THEORANGEBOX",
-                "title"=> "The Orange Box",
-                "metacriticLink"=> "/game/pc/the-orange-box",
-                "dealID"=> "TZdIf%2BhNCxhdhp2S69CaIwYmzVwD2n3OR%2BiLDGnURRo%3D",
-                "storeID"=> "1",
-                "gameID"=> "94081",
-                "salePrice"=> "3.99",
-                "normalPrice"=> "60",
-                "isOnSale"=> "1",
-                "savings"=> "80.040020",
-                "metacriticScore"=> "96",
-                "steamRatingText"=> "Very Positive",
-                "steamRatingPercent"=> "94",
-                "steamRatingCount"=> "990909",
-                "steamAppID"=> "469",
-                "releaseDate"=> 1191974400,
-                "lastChange"=> 1625001348,
-                "dealRating"=> "9.3",
-                "thumb"=> "https://cdn.cloudflare.steamstatic.com/steam/subs/469/capsule_sm_120.jpg?t=1577609887"
-            ],
-            
-        ];
-
-        // foreach (request()->query() as $query => $value){
-        //     $attribute = $transformer::originalAttribute($query);
-
-        //     if(isset($attribute, $value)){
-        //         $collection = $collection->where($attribute, $value);
-        //     }
-        // }
-
-        // return $collection;
-
+        $path = storage_path().'/deals.json' ;// ie: /var/www/laravel/app/storage/json/filename.json
         
-        if(request()->has('sort_by')){
-            $attribute = request()->sort_by;
+        $collection = json_decode(file_get_contents($path), true);
 
-            $collection = collect($data)->filter(function($deal) use ($attribute){
 
-                return $deal["internalName"] === $attribute;
-            });
 
-            return $collection;
+        foreach (request()->query() as $query => $value){
 
             
-        }
-
-        if(request()->has('q')){
-
-            $attribute = request()->q;
-          
+            $arrayUrl = explode(',',$value);
             
-            $collection = collect($data)->filter(function ($q) use ($attribute) {
-                return Str::startsWith($q['title'], $attribute);
-            });
-            return $collection;
-       
+
+            foreach($arrayUrl as $value){
+                
+
+                if(str_contains($value, ':')){
+                    
+                    $findBy = explode( ': ', $value);
+                   
+                    $attribute = $findBy[1];
+                   
+                    $collection = collect($collection)->filter(function ($q) use ($attribute){
+                        return Str::startsWith($q['title'], $attribute);
+                    })->toArray();
+                    
+
+                }
+                if(str_contains($value, '=')){
+                    $findBy = explode('= ', $value);
+                    $collection = collect($collection)->where('title', '=', $findBy[1])->toArray();
+                }
+                if(str_contains($value, '<')){
+                    $findBy = explode( '< ', $value);
+                   
+                    $collection = collect($collection)->where('salePrice', '<', (int)$findBy[1])->toArray();
+                }
+                if(str_contains($value, '>')){
+                    $findBy = explode('> ', $value);
+                       
+                    $collection = collect($collection)->where('salePrice', '>', (int)$findBy[1])->toArray();
+                }
+            }
         }
-
-
-        if(request()->has('precio')){
-
-            $attribute = request()->precio;
-          
-
-            $collection = collect($data)->where('normalPrice', '>', 30);
-
-           return $collection;
-
-       
-        }
+        return $collection;
 
         
     }
@@ -184,12 +112,6 @@ class dealsController extends Controller
   
         return Deals::all();
   
-    }
-
-    protected function subirdeals(){
-        $file = $request->file('file');
-        var_dump($file);
-        
     }
 
 }
